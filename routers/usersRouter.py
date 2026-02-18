@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 
 from dependencies import getUserService
-from schemas.request import UserCreate
+from schemas.request.UserCreate import UserCreate
+from schemas.response.UserResponse import UserResponse
 from services import UserService
 
 
@@ -10,7 +11,7 @@ router = APIRouter(
     tags=["Users"]
 )
 
-@router.post("/", response_model=int)
+@router.post("/", response_model=UserResponse)
 def createUser(
     user: UserCreate,
     service: UserService = Depends(getUserService)

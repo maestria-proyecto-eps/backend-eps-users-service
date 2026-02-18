@@ -5,3 +5,6 @@ class UserResponse(BaseModel):
     username: str
     id_rol: int
     estado: int
+    
+    class Config:
+        from_attributes = True
