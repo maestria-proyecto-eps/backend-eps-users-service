@@ -1,10 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class UserResponse(BaseModel):
-    id: int
+    id: int = Field(alias="id_usuario")
     username: str
     id_rol: int
     estado: int
     
-    class Config:
-        from_attributes = True
+    model_config={
+        "from_attributes": True,
+        "populate_by_name": True
+    }
