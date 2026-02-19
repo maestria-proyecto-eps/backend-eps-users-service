@@ -16,4 +16,4 @@ def createUser(
     user: UserCreate,
     service: UserService = Depends(getUserService)
 ):
-    return service.create_user(user)
+    return service.AddUser(user)
