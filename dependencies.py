@@ -1,7 +1,8 @@
 from fastapi import Depends
 from db.session import get_db
-from services import UserService
-from services.repositories import RolRepository, UserRepository
+from services.UserService import UserService
+from services.repositories.UserRepository import UserRepository
+from services.repositories.RolRepository import RolRepository
 
 #Repositories
 def getRolRepository(db = Depends(get_db))-> RolRepository:
