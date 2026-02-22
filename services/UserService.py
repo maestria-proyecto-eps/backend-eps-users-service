@@ -25,3 +25,9 @@ class UserService:
         self.repo.db.refresh(user)
 
         return Response.ok(UserResponse.model_validate(user),"Usuario creado exitosamente")
+    
+    def GetUserById(self, id: int):
+        user = self.repo.get_by_id(id)
+        if(user == None):
+            return Response.error("usuario no encontrado")
+        return Response.ok(UserResponse.model_validate(user),"Usuario obtenido exitosamente")

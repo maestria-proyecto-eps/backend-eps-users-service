@@ -12,7 +12,7 @@ class UserRepository:
         stmt = select(Usuario.id_usuario).where(Usuario.username == username)
         return self.db.scalar(stmt) is not None
     def get_by_id(self, user_id: int) -> Usuario | None:
-        stmt = select(Usuario).where(Usuario.id == user_id)
+        stmt = select(Usuario).where(Usuario.id_usuario == user_id)
         return self.db.scalar(stmt)
     def add_user(self, user: Usuario):
         self.db.add(user)
