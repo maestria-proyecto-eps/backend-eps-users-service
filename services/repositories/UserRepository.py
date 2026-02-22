@@ -14,5 +14,5 @@ class UserRepository:
     def get_by_id(self, user_id: int) -> Usuario | None:
         stmt = select(Usuario).where(Usuario.id == user_id)
         return self.db.scalar(stmt)
-    def add_user(self, user: Usuario) -> int:
+    def add_user(self, user: Usuario):
         self.db.add(user)
