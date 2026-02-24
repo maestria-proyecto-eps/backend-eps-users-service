@@ -5,6 +5,7 @@ from schemas.response.GenericResponse import Response
 from schemas.response.UserResponse import UserResponse
 from services.repositories import RolRepository
 from services.repositories.UserRepository import UserRepository
+from services.helpers.security import security
 
 
 class UserService:
@@ -12,13 +13,15 @@ class UserService:
         self.repo = repo
         self.rolRepo = rolRepo
     def AddUser(self, userData: UserCreate):
-        if(self.repo.exists_by_username(userData.username)):
-            return Response.error("Username ya registrado")
+        if(self.repo.exists_by_numId(userData.num_documento)):
+            return Response.error("Número de identificación ya registrado")
         if(not self.rolRepo.exists_by_id(userData.id_rol)):
             return Response.error("Rol no registrado")
         user = Usuario(**userData.dict())
 
         user.estado=1
+        #user.password = security.hash_password(user.password)    #Se hashea la password
+
 
         self.repo.add_user(user)
         self.repo.db.commit()

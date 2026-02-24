@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 class UserResponse(BaseModel):
     id: int = Field(alias="id_usuario")
-    username: str
+    num_documento: int
     id_rol: int
     estado: int
     
