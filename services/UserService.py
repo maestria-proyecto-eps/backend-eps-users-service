@@ -2,13 +2,13 @@
 import math
 
 from models.Usuario import Usuario
-from schemas.request import UserCreate, UserUpdateRole, UserUpdateStatus, UserUpdate
+from schemas.request import UserCreate, UserUpdateRole, UserUpdateStatus, UserUpdate, UserChangePassword
 from schemas.response.GenericPaginatedResponse import PaginatedResponse
 from schemas.response.GenericResponse import Response
 from schemas.response.UserResponse import UserResponse
 from services.repositories import RolRepository
 from services.repositories.UserRepository import UserRepository
-from services.helpers.security import security
+from services.helpers.security import Security
 
 
 class UserService:
@@ -23,7 +23,7 @@ class UserService:
         user = Usuario(**userData.dict())
 
         user.estado=1
-        #user.password = security.hash_password(user.password)    #Se hashea la password
+        user.password = Security.hash_password(user.password)
 
 
         self.repo.add_user(user)
@@ -68,15 +68,15 @@ class UserService:
         self.repo.db.commit()
         self.repo.db.refresh(user)
         return Response.ok(UserResponse.model_validate(user),"usuario actualizado exitosamente")
-    def UpdateUserPasswordById(self, id:int, userData : UserUpdateStatus):
+    def UpdateUserPasswordById(self, id:int, userData : UserChangePassword):
         user = self.repo.get_by_id(id)
         if(user == None):
             return Response.error("usuario no encontrado")
         if(user.estado ==0):
             return Response.error("usuario desactivado")
-        if(user.password !=userData.oldPassword):
+        if( not Security.verify_password(userData.oldPassword, user.password)):
             return Response.error("Contraseña no concuerda")
-        user.password=userData.newPassword
+        user.password=Security.hash_password(userData.newPassword)
         self.repo.db.commit()
         self.repo.db.refresh(user)
         return Response.ok(UserResponse.model_validate(user),"usuario actualizado exitosamente")

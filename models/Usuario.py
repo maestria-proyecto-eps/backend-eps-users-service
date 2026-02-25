@@ -7,7 +7,7 @@ class Usuario(Base):
     __tablename__ = "usuarios"
     id_usuario= Column(Integer, primary_key=True)
     num_documento= Column(BigInteger, nullable=False)
-    password= Column(String(50), nullable=False)
+    password= Column(String(60), nullable=False)
     id_rol= Column(Integer,ForeignKey("roles.id_rol"), nullable=False)
     estado= Column(SmallInteger, nullable=False)
     intentos_login = Column(SmallInteger, nullable=False,default=0)
