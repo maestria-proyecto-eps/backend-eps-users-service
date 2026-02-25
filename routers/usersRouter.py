@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends,status
 
 from dependencies import getUserService
+from schemas.request.UserChangePassword import UserChangePassword
 from schemas.request.UserUpdateRole import UserUpdateRole
 from schemas.request.UserCreate import UserCreate
 from schemas.request.UserUpdateStatus import UserUpdateStatus
@@ -60,6 +61,16 @@ def UpdateStatusUser(
     service: UserService = Depends(getUserService)
 ):
     model = service.UpdateuserStatuById(id,user)
+    if(model.hasError):
+        return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
+    return model.toHttpResponse()
+@router.post("/{id}/reset-password", response_model=UserResponse)
+def UpdatePasswordUser(
+    id: int,
+    user: UserChangePassword,
+    service: UserService = Depends(getUserService)
+):
+    model = service.UpdateUserPasswordById(id,user)
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse()

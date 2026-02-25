@@ -65,3 +65,15 @@ class UserService:
         self.repo.db.commit()
         self.repo.db.refresh(user)
         return Response.ok(UserResponse.model_validate(user),"usuario actualizado exitosamente")
+    def UpdateUserPasswordById(self, id:int, userData : UserUpdateStatus):
+        user = self.repo.get_by_id(id)
+        if(user == None):
+            return Response.error("usuario no encontrado")
+        if(user.estado ==0):
+            return Response.error("usuario desactivado")
+        if(user.password !=userData.oldPassword):
+            return Response.error("Contraseña no concuerda")
+        user.password=userData.newPassword
+        self.repo.db.commit()
+        self.repo.db.refresh(user)
+        return Response.ok(UserResponse.model_validate(user),"usuario actualizado exitosamente")
