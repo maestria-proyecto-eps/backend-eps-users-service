@@ -1,6 +1,6 @@
 
 from models.Usuario import Usuario
-from schemas.request import UserCreate
+from schemas.request import UserCreate, UserUpdateRole
 from schemas.response.GenericResponse import Response
 from schemas.response.UserResponse import UserResponse
 from services.repositories import RolRepository
@@ -43,3 +43,15 @@ class UserService:
         user.estado=0
         self.repo.db.commit()
         return Response.ok(None,"usuario desactivado exitosamente")
+    def ChangeserRoleById(self, id:int, userData : UserUpdateRole):
+        user = self.repo.get_by_id(id)
+        if(user == None):
+            return Response.error("usuario no encontrado")
+        if(user.estado ==0):
+            return Response.error("usuario desactivado")
+        if(not self.rolRepo.exists_by_id(userData.id_rol)):
+            return Response.error("Rol no registrado")
+        user.id_rol=userData.id_rol
+        self.repo.db.commit()
+        self.repo.db.refresh(user)
+        return Response.ok(UserResponse.model_validate(user),"usuario actualizado exitosamente")

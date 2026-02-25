@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends,status
 
 from dependencies import getUserService
+from schemas.request.UserUpdateRole import UserUpdateRole
 from schemas.request.UserCreate import UserCreate
 from schemas.response.UserResponse import UserResponse
 from services import UserService
@@ -22,7 +23,7 @@ def createUser(
     return model.toHttpResponse(status.HTTP_201_CREATED)
 
 @router.get("/{id}", response_model=UserResponse)
-def createUser(
+def getUser(
     id: int,
     service: UserService = Depends(getUserService)
 ):
@@ -32,7 +33,7 @@ def createUser(
     return model.toHttpResponse(status.HTTP_201_CREATED)
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def createUser(
+def deleteUser(
     id: int,
     service: UserService = Depends(getUserService)
 ):
@@ -40,3 +41,14 @@ def createUser(
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse(status.HTTP_204_NO_CONTENT)
+
+@router.put("/{id}/role", response_model=UserResponse)
+def UpdateRoleUser(
+    id: int,
+    user: UserUpdateRole,
+    service: UserService = Depends(getUserService)
+):
+    model = service.ChangeserRoleById(id,user)
+    if(model.hasError):
+        return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
+    return model.toHttpResponse()
