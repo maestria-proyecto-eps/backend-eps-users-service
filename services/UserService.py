@@ -34,3 +34,12 @@ class UserService:
         if(user == None):
             return Response.error("usuario no encontrado")
         return Response.ok(UserResponse.model_validate(user),"Usuario obtenido exitosamente")
+    def DeleteUserById(self, id:int):
+        user = self.repo.get_by_id(id)
+        if(user == None):
+            return Response.error("usuario no encontrado")
+        if(user.estado==0):
+            return Response.error("usuario ya se encuentra inactivo")
+        user.estado=0
+        self.repo.db.commit()
+        return Response.ok(None,"usuario desactivado exitosamente")

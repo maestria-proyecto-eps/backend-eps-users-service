@@ -30,3 +30,13 @@ def createUser(
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse(status.HTTP_201_CREATED)
+
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def createUser(
+    id: int,
+    service: UserService = Depends(getUserService)
+):
+    model = service.DeleteUserById(id)
+    if(model.hasError):
+        return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
+    return model.toHttpResponse(status.HTTP_204_NO_CONTENT)
