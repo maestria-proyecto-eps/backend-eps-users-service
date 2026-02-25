@@ -1,6 +1,9 @@
 
+import math
+
 from models.Usuario import Usuario
 from schemas.request import UserCreate, UserUpdateRole, UserUpdateStatus, UserUpdate
+from schemas.response.GenericPaginatedResponse import PaginatedResponse
 from schemas.response.GenericResponse import Response
 from schemas.response.UserResponse import UserResponse
 from services.repositories import RolRepository
@@ -90,3 +93,16 @@ class UserService:
         self.repo.db.commit()
         self.repo.db.refresh(user)
         return Response.ok(UserResponse.model_validate(user),"usuario actualizado exitosamente")
+    def GetUsers(self, rol: int, estado: int, pag:int, cantidad: int):
+        if(rol != None and not self.rolRepo.exists_by_id(rol)):
+            return Response.error("Rol no registrado")
+        if(estado != None and (estado >0 or estado >1)):
+            return Response.error("Estado no registrado")
+        usuarios, totalElem = self.repo.get_users(rol,estado,pag,cantidad)
+        totalPags = math.ceil(totalElem / cantidad)
+        return Response.ok(PaginatedResponse[UserResponse](
+        items=[UserResponse.model_validate(u) for u in usuarios],
+        total=totalElem,
+        pagina=pag,
+        tamPagina=cantidad,
+        totalPaginas=totalPags),"Datos obtenidos exitosamente")

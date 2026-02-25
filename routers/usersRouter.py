@@ -25,6 +25,16 @@ def createUser(
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse(status.HTTP_201_CREATED)
 
+@router.get("/", response_model=UserResponse)
+def GetUsers(
+    rol:int=None,estado:int=None,pag:int=1,cantidad:int=30,
+    service: UserService = Depends(getUserService)
+):
+    model = service.GetUsers(rol,estado,pag,cantidad)
+    if(model.hasError):
+        return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
+    return model.toHttpResponse()
+
 @router.get("/{id}", response_model=UserResponse)
 def getUser(
     id: int,
