@@ -5,6 +5,7 @@ from schemas.request.UserChangePassword import UserChangePassword
 from schemas.request.UserUpdateRole import UserUpdateRole
 from schemas.request.UserCreate import UserCreate
 from schemas.request.UserUpdateStatus import UserUpdateStatus
+from schemas.request.UserUpdate import UserUpdate
 from schemas.response.UserResponse import UserResponse
 from services import UserService
 
@@ -33,6 +34,17 @@ def getUser(
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse(status.HTTP_201_CREATED)
+
+@router.put("/{id}", response_model=UserResponse)
+def UpdateUser(
+    id: int,
+    user: UserUpdate,
+    service: UserService = Depends(getUserService)
+):
+    model = service.UpdateUserById(id,user)
+    if(model.hasError):
+        return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
+    return model.toHttpResponse()
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def deleteUser(

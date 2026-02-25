@@ -1,6 +1,6 @@
 
 from models.Usuario import Usuario
-from schemas.request import UserCreate, UserUpdateRole, UserUpdateStatus
+from schemas.request import UserCreate, UserUpdateRole, UserUpdateStatus, UserUpdate
 from schemas.response.GenericResponse import Response
 from schemas.response.UserResponse import UserResponse
 from services.repositories import RolRepository
@@ -74,6 +74,19 @@ class UserService:
         if(user.password !=userData.oldPassword):
             return Response.error("Contraseña no concuerda")
         user.password=userData.newPassword
+        self.repo.db.commit()
+        self.repo.db.refresh(user)
+        return Response.ok(UserResponse.model_validate(user),"usuario actualizado exitosamente")
+    def UpdateUserById(self, id:int, userData : UserUpdate):
+        user = self.repo.get_by_id(id)
+        if(user == None):
+            return Response.error("usuario no encontrado")
+        if(user.estado ==0):
+            return Response.error("usuario desactivado")
+        if(not self.rolRepo.exists_by_id(userData.id_rol)):
+            return Response.error("Rol no registrado")
+        user.num_documento=userData.num_documento
+        user.id_rol=userData.id_rol
         self.repo.db.commit()
         self.repo.db.refresh(user)
         return Response.ok(UserResponse.model_validate(user),"usuario actualizado exitosamente")
