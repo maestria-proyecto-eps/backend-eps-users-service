@@ -1,6 +1,6 @@
 
 from models.Usuario import Usuario
-from schemas.request import UserCreate, UserUpdateRole
+from schemas.request import UserCreate, UserUpdateRole, UserUpdateStatus
 from schemas.response.GenericResponse import Response
 from schemas.response.UserResponse import UserResponse
 from services.repositories import RolRepository
@@ -52,6 +52,16 @@ class UserService:
         if(not self.rolRepo.exists_by_id(userData.id_rol)):
             return Response.error("Rol no registrado")
         user.id_rol=userData.id_rol
+        self.repo.db.commit()
+        self.repo.db.refresh(user)
+        return Response.ok(UserResponse.model_validate(user),"usuario actualizado exitosamente")
+    def UpdateuserStatuById(self, id:int, userData : UserUpdateStatus):
+        user = self.repo.get_by_id(id)
+        if(user == None):
+            return Response.error("usuario no encontrado")
+        if(user.estado<0 or user.estado >1):
+            return Response.error("estado no valido")
+        user.estado=userData.estado
         self.repo.db.commit()
         self.repo.db.refresh(user)
         return Response.ok(UserResponse.model_validate(user),"usuario actualizado exitosamente")
