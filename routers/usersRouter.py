@@ -43,7 +43,7 @@ def getUser(
     model = service.GetUserById(id)
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
-    return model.toHttpResponse(status.HTTP_201_CREATED)
+    return model.toHttpResponse(status.HTTP_200_OK)
 
 @router.put("/{id}", response_model=UserResponse)
 def UpdateUser(
