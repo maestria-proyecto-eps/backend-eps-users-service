@@ -1,13 +1,16 @@
 from typing import Generic, TypeVar, List
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 from pydantic.generics import GenericModel
 
 T = TypeVar("T")
 
 
 class PaginatedResponse(GenericModel, Generic[T]):
-    items: List[T]
-    total: int
-    pagina: int
-    tamPagina: int
-    totalPaginas: int
+    data: List[T]
+    page: int
+    pages: int
+    
+    @computed_field
+    @property
+    def hasElements(self) -> bool:
+        return len(self.data) > 0

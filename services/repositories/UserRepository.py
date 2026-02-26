@@ -1,7 +1,8 @@
 from typing import List
 
 from sqlalchemy import Tuple, func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
+from models import Rol
 from models.Usuario import Usuario
 
 class UserRepository:
@@ -14,12 +15,12 @@ class UserRepository:
         stmt = select(Usuario.id_usuario).where(Usuario.num_documento == numId)
         return self.db.scalar(stmt) is not None
     def get_by_id(self, user_id: int) -> Usuario | None:
-        stmt = select(Usuario).where(Usuario.id_usuario == user_id)
+        stmt = select(Usuario).options(joinedload(Usuario.rol)).where(Usuario.id_usuario == user_id)
         return self.db.scalar(stmt)
     def add_user(self, user: Usuario):
         self.db.add(user)
     def get_users(self,rol:int, estado: int, pag: int, cantidad: int) -> Tuple[List["Usuario"], int]:
-        query = select(Usuario)
+        query = select(Usuario).options(joinedload(Usuario.rol))
         if rol is not None:
 
             query = query.where(Usuario.id_rol == rol)

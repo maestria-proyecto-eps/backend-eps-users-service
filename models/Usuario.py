@@ -14,6 +14,10 @@ class Usuario(Base):
     tiempo_de_fallo_login = Column(TIMESTAMP, nullable=True)
     rol = relationship("Role", back_populates="usuarios")
 
+    @property
+    def rol_des(self):
+        return self.rol.nombre_rol if self.rol else None
+
     def __repr__(self):
         return f"<Usuario(id_usuario='{self.id_usuario}', num_documento='{self.num_documento}', password='{self.password}', id_rol='{self.id_rol}', estado='{self.estado}'), intentos_login='{self.intentos_login}', tiempo_de_fallo_login='{self.tiempo_de_fallo_login}')>"
     

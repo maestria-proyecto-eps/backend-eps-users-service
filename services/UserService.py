@@ -101,8 +101,6 @@ class UserService:
         usuarios, totalElem = self.repo.get_users(rol,estado,pag,cantidad)
         totalPags = math.ceil(totalElem / cantidad)
         return Response.ok(PaginatedResponse[UserResponse](
-        items=[UserResponse.model_validate(u) for u in usuarios],
-        total=totalElem,
-        pagina=pag,
-        tamPagina=cantidad,
-        totalPaginas=totalPags),"Datos obtenidos exitosamente")
+        data=[UserResponse.model_validate(u) for u in usuarios],
+        page=pag,
+        pages=totalPags),"Datos obtenidos exitosamente")
