@@ -14,7 +14,7 @@ class EnfermeroService:
     def add(self, data: EnfermeroCreate):
         if not self.userRepo.exists_by_id(data.id_usuario):
             return Response.error("Usuario no registrado")
-        enfermero = Enfermero(**data.dict())
+        enfermero = Enfermero(**data.model_dump())
         self.repo.add(enfermero)
         self.repo.db.commit()
         self.repo.db.refresh(enfermero)
@@ -29,7 +29,7 @@ class EnfermeroService:
         if not self.repo.exists_by_id(id):
             return Response.error("Enfermero no encontrado")
         enfermero = self.repo.get_by_id(id)
-        for key, value in data.dict(exclude_unset=True).items():
+        for key, value in data.model_dump(exclude_unset=True).items():
             setattr(enfermero, key, value)
         self.repo.db.commit()
         self.repo.db.refresh(enfermero)

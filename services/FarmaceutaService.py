@@ -14,7 +14,7 @@ class FarmaceutaService:
     def add(self, data: FarmaceutaCreate):
         if not self.userRepo.exists_by_id(data.id_usuario):
             return Response.error("Usuario no registrado")
-        farmaceuta = Farmaceuta(**data.dict())
+        farmaceuta = Farmaceuta(**data.model_dump())
         self.repo.add(farmaceuta)
         self.repo.db.commit()
         self.repo.db.refresh(farmaceuta)
@@ -29,7 +29,7 @@ class FarmaceutaService:
         if not self.repo.exists_by_id(id):
             return Response.error("Farmaceuta no encontrado")
         farmaceuta = self.repo.get_by_id(id)
-        for key, value in data.dict(exclude_unset=True).items():
+        for key, value in data.model_dump(exclude_unset=True).items():
             setattr(farmaceuta, key, value)
         self.repo.db.commit()
         self.repo.db.refresh(farmaceuta)
