@@ -20,7 +20,7 @@ def test_create_user_success(client):
 
 def test_get_user_by_id_success(client):
     """Prueba obtener usuario por ID"""
-    user_id = 1
+    user_id = 2
     response = client.get(f"/users/{user_id}")
     assert response.status_code == 200
     assert response.json()["data"]["id_usuario"] == user_id
@@ -42,7 +42,7 @@ def test_create_user_invalid_data(client):
 
 def test_update_user_success(client):
     """Prueba actualizar un usuario"""
-    user_id = 1
+    user_id = 2
     user_data = {
         "num_documento": 456789,
         "id_rol": 1
@@ -62,7 +62,7 @@ def test_update_user_not_found(client):
 
 def test_delete_user_success(client):
     """Prueba eliminar un usuario"""
-    user_id = 1
+    user_id = 2
     response = client.delete(f"/users/{user_id}")
     assert response.status_code == 204
 
