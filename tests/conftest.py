@@ -1,3 +1,4 @@
+
 from models.Rol import Role
 import pytest
 from sqlalchemy import create_engine
@@ -50,6 +51,27 @@ def test_rol():
     db.commit()
     db.refresh(rol)
     return rol
+    
+   
+
+@pytest.fixture
+def test_usuario(test_rol):
+    from models.Usuario import Usuario
+    db = TestingSessionLocal()
+
+    usuario = Usuario(
+        id_usuario=2,
+        num_documento=123456789,
+        password="abc123456",
+        id_rol=1,
+        estado=1
+    )
+    db.add(usuario)
+    db.commit()
+    db.refresh(usuario)
+
+    return usuario
+
 
 @pytest.fixture()
 def client():

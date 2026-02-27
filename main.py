@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from core.logger import setup_logging, get_logger
-from routers import usersRouter
+from routers import usersRouter, enfermeroRouter, farmaceutaRouter
 
 app = FastAPI(
     title="EPS API 2",
@@ -44,3 +44,5 @@ def root():
         "message": "ok"
     }
 app.include_router(usersRouter.router)
+app.include_router(enfermeroRouter.router)
+app.include_router(farmaceutaRouter.router)
