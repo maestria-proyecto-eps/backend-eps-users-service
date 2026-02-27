@@ -7,7 +7,7 @@ def test_get_users_success(client):
     assert response.status_code == 200
     assert isinstance(response.json()["data"]["data"], list)
     
-def test_create_user_success(client,test_rol):
+def test_create_user_success(client):
     """Prueba crear un nuevo usuario"""
     user_data = {
         "num_documento": 123456,
