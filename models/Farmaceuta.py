@@ -5,7 +5,7 @@ from db.session import Base
 class Farmaceuta(Base):
     __tablename__ = "farmaceuta"
 
-    id_farmaceuta = Column(Integer, primary_key=True)
+    id_farmaceuta = Column(BigInteger, primary_key=True)
     nombres       = Column(String(50), nullable=False)
     apellidos     = Column(String(50), nullable=False)
     estado        = Column(SmallInteger, nullable=False)

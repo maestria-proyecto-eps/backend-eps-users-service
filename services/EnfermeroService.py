@@ -12,9 +12,11 @@ class EnfermeroService:
         self.userRepo = userRepo
 
     def add(self, data: EnfermeroCreate):
-        if not self.userRepo.exists_by_id(data.id_usuario):
-            return Response.error("Usuario no registrado")
+        user=self.userRepo.get_by_id(data.id_usuario)
+        if(user == None):
+            return Response.error("Usuario no encontrado")
         enfermero = Enfermero(**data.model_dump())
+        enfermero.id_enfermero=user.num_documento
         self.repo.add(enfermero)
         self.repo.db.commit()
         self.repo.db.refresh(enfermero)

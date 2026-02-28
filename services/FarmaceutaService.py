@@ -12,9 +12,11 @@ class FarmaceutaService:
         self.userRepo = userRepo
 
     def add(self, data: FarmaceutaCreate):
-        if not self.userRepo.exists_by_id(data.id_usuario):
-            return Response.error("Usuario no registrado")
+        user=self.userRepo.get_by_id(data.id_usuario)
+        if(user == None):
+            return Response.error("Usuario no encontrado")
         farmaceuta = Farmaceuta(**data.model_dump())
+        farmaceuta.id_farmaceuta=user.num_documento
         self.repo.add(farmaceuta)
         self.repo.db.commit()
         self.repo.db.refresh(farmaceuta)
