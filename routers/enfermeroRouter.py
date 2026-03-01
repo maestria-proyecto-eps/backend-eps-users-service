@@ -2,14 +2,17 @@ from fastapi import APIRouter, Depends, status
 from dependencies import getEnfermeroService
 from schemas.request.EnfermeroCreate import EnfermeroCreate
 from schemas.request.EnfermeroUpdate import EnfermeroUpdate
+from schemas.response.EnfermeroResponse import EnfermeroResponse
 from services.EnfermeroService import EnfermeroService
+from schemas.response.GenericResponse import Response
+from schemas.response.GenericPaginatedResponse import PaginatedResponse
 
 router = APIRouter(
     prefix="/nurses",
     tags=["Enfermeros"]
 )
 
-@router.post("/")
+@router.post("/", response_model=Response[EnfermeroResponse])
 def crear_enfermero(
     data: EnfermeroCreate,
     service: EnfermeroService = Depends(getEnfermeroService)
@@ -19,7 +22,7 @@ def crear_enfermero(
         return result.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return result.toHttpResponse(status.HTTP_201_CREATED)
 
-@router.get("/")
+@router.get("/", response_model=Response[PaginatedResponse[EnfermeroResponse]])
 def listar_enfermeros(
     pag: int = 1,
     cantidad: int = 30,
@@ -30,7 +33,7 @@ def listar_enfermeros(
         return result.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return result.toHttpResponse(status.HTTP_200_OK)
 
-@router.put("/{id}")
+@router.put("/{id}", response_model=Response[EnfermeroResponse])
 def actualizar_enfermero(
     id: int,
     data: EnfermeroUpdate,

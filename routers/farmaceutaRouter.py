@@ -3,13 +3,16 @@ from dependencies import getFarmaceutaService
 from schemas.request.FarmaceutaCreate import FarmaceutaCreate
 from schemas.request.FarmaceutaUpdate import FarmaceutaUpdate
 from services.FarmaceutaService import FarmaceutaService
+from schemas.response.FarmaceutaResponse import FarmaceutaResponse
+from schemas.response.GenericResponse import Response
+from schemas.response.GenericPaginatedResponse import PaginatedResponse
 
 router = APIRouter(
     prefix="/pharmacists",
     tags=["Farmaceutas"]
 )
 
-@router.post("/")
+@router.post("/", response_model=Response[FarmaceutaResponse])
 def crear_farmaceuta(
     data: FarmaceutaCreate,
     service: FarmaceutaService = Depends(getFarmaceutaService)
@@ -19,7 +22,7 @@ def crear_farmaceuta(
         return result.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return result.toHttpResponse(status.HTTP_201_CREATED)
 
-@router.get("/")
+@router.get("/", response_model=Response[PaginatedResponse[FarmaceutaResponse]])
 def listar_farmaceutas(
     pag: int = 1,
     cantidad: int = 30,
@@ -30,7 +33,7 @@ def listar_farmaceutas(
         return result.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return result.toHttpResponse(status.HTTP_200_OK)
 
-@router.put("/{id}")
+@router.put("/{id}", response_model=Response[FarmaceutaResponse])
 def actualizar_farmaceuta(
     id: int,
     data: FarmaceutaUpdate,
