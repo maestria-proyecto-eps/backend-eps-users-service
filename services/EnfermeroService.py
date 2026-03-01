@@ -1,8 +1,10 @@
+import math
 from models.Enfermero import Enfermero
 from schemas.request.EnfermeroCreate import EnfermeroCreate
 from schemas.request.EnfermeroUpdate import EnfermeroUpdate
 from schemas.response.GenericResponse import Response
 from schemas.response.EnfermeroResponse import EnfermeroResponse
+from schemas.response.GenericPaginatedResponse import PaginatedResponse
 from services.repositories.EnfermeroRepository import EnfermeroRepository
 from services.repositories.UserRepository import UserRepository
 
@@ -12,18 +14,27 @@ class EnfermeroService:
         self.userRepo = userRepo
 
     def add(self, data: EnfermeroCreate):
-        if not self.userRepo.exists_by_id(data.id_usuario):
-            return Response.error("Usuario no registrado")
+        user=self.userRepo.get_by_id(data.id_usuario)
+        if(user == None):
+            return Response.error("Usuario no encontrado")
+        if self.repo.exists_by_id(user.num_documento):
+            return Response.error("Ya existe un enfermero con ese documento")
         enfermero = Enfermero(**data.model_dump())
+        enfermero.id_enfermero=user.num_documento
         self.repo.add(enfermero)
         self.repo.db.commit()
         self.repo.db.refresh(enfermero)
         return Response.ok(EnfermeroResponse.model_validate(enfermero), "Enfermero creado exitosamente")
 
-    def get_all(self):
-        enfermeros = self.repo.get_all()
-        data = [EnfermeroResponse.model_validate(e) for e in enfermeros]
-        return Response.ok(data, "Listado de enfermeros")
+    def get_all(self, pag: int, cantidad: int):
+        enfermeros, totalElem = self.repo.get_all(pag, cantidad)
+        totalPags = math.ceil(totalElem / cantidad) 
+        return Response.ok(PaginatedResponse[EnfermeroResponse](
+            data=[EnfermeroResponse.model_validate(e) for e in enfermeros], 
+            page=pag, 
+            pages=totalPags
+        ), "Listado de enfermeros")
+
 
     def update(self, id: int, data: EnfermeroUpdate):
         if not self.repo.exists_by_id(id):

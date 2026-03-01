@@ -7,6 +7,8 @@ from schemas.request.UserCreate import UserCreate
 from schemas.request.UserUpdateStatus import UserUpdateStatus
 from schemas.request.UserUpdate import UserUpdate
 from schemas.response.UserResponse import UserResponse
+from schemas.response.GenericResponse import Response
+from schemas.response.GenericPaginatedResponse import PaginatedResponse
 from services import UserService
 
 
@@ -15,7 +17,7 @@ router = APIRouter(
     tags=["Users"]
 )
 
-@router.post("/", response_model=UserResponse)
+@router.post("/", response_model=Response[UserResponse])
 def createUser(
     user: UserCreate,
     service: UserService = Depends(getUserService)
@@ -25,7 +27,7 @@ def createUser(
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse(status.HTTP_201_CREATED)
 
-@router.get("/", response_model=UserResponse)
+@router.get("/", response_model=Response[PaginatedResponse[UserResponse]])
 def GetUsers(
     rol:int=None,estado:int=None,pag:int=1,cantidad:int=30,
     service: UserService = Depends(getUserService)
@@ -35,7 +37,7 @@ def GetUsers(
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse()
 
-@router.get("/{id}", response_model=UserResponse)
+@router.get("/{id}", response_model=Response[UserResponse])
 def getUser(
     id: int,
     service: UserService = Depends(getUserService)
@@ -45,7 +47,7 @@ def getUser(
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse(status.HTTP_200_OK)
 
-@router.put("/{id}", response_model=UserResponse)
+@router.put("/{id}", response_model=Response[UserResponse])
 def UpdateUser(
     id: int,
     user: UserUpdate,
@@ -66,7 +68,7 @@ def deleteUser(
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse(status.HTTP_204_NO_CONTENT)
 
-@router.put("/{id}/change-role", response_model=UserResponse)
+@router.put("/{id}/change-role", response_model=Response[UserResponse])
 def UpdateRoleUser(
     id: int,
     user: UserUpdateRole,
@@ -76,7 +78,7 @@ def UpdateRoleUser(
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse()
-@router.put("/{id}/change-status", response_model=UserResponse)
+@router.put("/{id}/change-status", response_model=Response[UserResponse])
 def UpdateStatusUser(
     id: int,
     user: UserUpdateStatus,
@@ -86,7 +88,7 @@ def UpdateStatusUser(
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse()
-@router.post("/{id}/reset-password", response_model=UserResponse)
+@router.post("/{id}/reset-password", response_model=Response[UserResponse])
 def UpdatePasswordUser(
     id: int,
     user: UserChangePassword,
