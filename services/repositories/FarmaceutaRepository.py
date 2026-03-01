@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func,select
 from sqlalchemy.orm import Session
 from models.Farmaceuta import Farmaceuta
 
@@ -10,9 +10,15 @@ class FarmaceutaRepository:
         stmt = select(Farmaceuta.id_farmaceuta).where(Farmaceuta.id_farmaceuta == id)
         return self.db.scalar(stmt) is not None
 
-    def get_all(self) -> list[Farmaceuta]:
+    def get_all(self, pag: int, cantidad: int) -> tuple[list[Farmaceuta], int]:
         stmt = select(Farmaceuta)
-        return list(self.db.scalars(stmt).all())
+        count_stmt = select(func.count()).select_from(stmt.subquery())
+        total = self.db.execute(count_stmt).scalar_one()
+        offset = (pag - 1) * cantidad
+        stmt = stmt.offset(offset).limit(cantidad)
+        result = self.db.execute(stmt)
+        Farmaceutas = result.scalars().all()
+        return Farmaceutas, total
 
     def get_by_id(self, id: int) -> Farmaceuta | None:
         stmt = select(Farmaceuta).where(Farmaceuta.id_farmaceuta == id)

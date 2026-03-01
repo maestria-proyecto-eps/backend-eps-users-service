@@ -4,7 +4,7 @@ def test_get_enfermeros_success(client):
     """Prueba obtener lista de enfermeros vacía"""
     response = client.get("/nurses/")
     assert response.status_code == 200
-    assert isinstance(response.json()["data"], list)
+    assert isinstance(response.json()["data"]["data"], list)
 
 def test_create_enfermero_success(client, test_usuario):
     """Prueba crear un nuevo enfermero"""

@@ -4,7 +4,7 @@ def test_get_farmaceutas_success(client):
     """Prueba obtener lista de farmaceutas vacía"""
     response = client.get("/pharmacists/")
     assert response.status_code == 200
-    assert isinstance(response.json()["data"], list)
+    assert isinstance(response.json()["data"]["data"], list)
 
 def test_create_farmaceuta_success(client):
     """Prueba crear un nuevo farmaceuta"""
