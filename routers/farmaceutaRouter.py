@@ -21,9 +21,13 @@ def crear_farmaceuta(
 
 @router.get("/")
 def listar_farmaceutas(
+    pag: int = 1,
+    cantidad: int = 30,
     service: FarmaceutaService = Depends(getFarmaceutaService)
 ):
-    result = service.get_all()
+    result = service.get_all(pag, cantidad)
+    if result.hasError:
+        return result.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return result.toHttpResponse(status.HTTP_200_OK)
 
 @router.put("/{id}")
