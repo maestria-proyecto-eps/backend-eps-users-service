@@ -2,13 +2,18 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
-
-    DB_URL: str
+    user: str
+    password: str
+    host: str
+    port: int = 5432
+    dbname: str
 
     #jwt
     JWT_EXPIRES_MINUTES: int
     JWT_SECRET: str
     JWT_ALGORITHM: str
+
+    class Config:
+        env_file = ".env"
 
 settings = Settings()

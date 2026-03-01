@@ -6,16 +6,16 @@ class EnfermeroRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def exists_by_id(self, id_usuario: int) -> bool:
-        stmt = select(Enfermero.id_enfermero).where(Enfermero.id_usuario == id_usuario)
+    def exists_by_id(self, id: int) -> bool:
+        stmt = select(Enfermero.id_enfermero).where(Enfermero.id_enfermero == id)
         return self.db.scalar(stmt) is not None
 
     def get_all(self) -> list[Enfermero]:
         stmt = select(Enfermero)
         return list(self.db.scalars(stmt).all())
 
-    def get_by_id(self, id_usuario: int) -> Enfermero | None:
-        stmt = select(Enfermero).where(Enfermero.id_usuario == id_usuario)
+    def get_by_id(self, id: int) -> Enfermero | None:
+        stmt = select(Enfermero).where(Enfermero.id_enfermero == id)
         return self.db.scalar(stmt)
 
     def add(self, enfermero: Enfermero):

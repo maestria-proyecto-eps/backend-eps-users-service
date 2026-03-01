@@ -6,16 +6,16 @@ class FarmaceutaRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def exists_by_id(self, id_usuario: int) -> bool:
-        stmt = select(Farmaceuta.id_farmaceuta).where(Farmaceuta.id_usuario == id_usuario)
+    def exists_by_id(self, id: int) -> bool:
+        stmt = select(Farmaceuta.id_farmaceuta).where(Farmaceuta.id_farmaceuta == id)
         return self.db.scalar(stmt) is not None
 
     def get_all(self) -> list[Farmaceuta]:
         stmt = select(Farmaceuta)
         return list(self.db.scalars(stmt).all())
 
-    def get_by_id(self, id_usuario: int) -> Farmaceuta | None:
-        stmt = select(Farmaceuta).where(Farmaceuta.id_usuario == id_usuario)
+    def get_by_id(self, id: int) -> Farmaceuta | None:
+        stmt = select(Farmaceuta).where(Farmaceuta.id_farmaceuta == id)
         return self.db.scalar(stmt)
 
     def add(self, farmaceuta: Farmaceuta):

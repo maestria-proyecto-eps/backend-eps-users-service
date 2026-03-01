@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from db.session import Base
 
 class Farmaceuta(Base):
-    __tablename__ = "farmaceuta"
+    __tablename__ = "farmaceutas"
 
     id_farmaceuta = Column(BigInteger, primary_key=True)
     nombres       = Column(String(50), nullable=False)
