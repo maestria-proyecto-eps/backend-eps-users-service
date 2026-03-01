@@ -8,22 +8,18 @@ from typing import Optional
 
 router = APIRouter(prefix="/api/doctors", tags=["Doctors"])
 
-# SOLO HR
-def verify_hr_role(role: str = Header(..., description="El rol del usuario que hace la petición")):
-    if role.lower() != "hr": # Se realizó un if para poder realizar pruebas en swagger, se espera generar tokens
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acceso denegado: Solo el personal de HR puede realizar esta acción"
-        )
-    return role
-
-# CREACIÓN DE DOCTORES (UNICAMENTE HR)
+# CREACIÓN DE DOCTORES
 @router.post("/", response_model=DoctorResponse)
 def create_doctor(
         doctor: DoctorCreate,
         db: Session = Depends(get_db),
 ):
+    existdoctor = db.query(Doctor).filter(Doctor.id_medico == doctor.id_medico).first()
+    if existdoctor:
+        raise HTTPException(status_code=400, detail="El ID de médico ya está registrado")
+
     db_doctor = Doctor(
+        id_medico=doctor.id_medico,
         nombres=doctor.nombres,
         apellidos=doctor.apellidos,
         num_licencia=doctor.num_licencia,
