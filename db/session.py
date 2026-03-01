@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import NullPool, create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from core.config import settings
 
@@ -13,9 +13,7 @@ DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?
 # Crear engine (sincrónico)
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
+    poolclass=NullPool
 )
 
 SessionLocal = sessionmaker(
