@@ -10,7 +10,7 @@ class FarmaceutaRepository:
         stmt = select(Farmaceuta.id_farmaceuta).where(Farmaceuta.id_farmaceuta == id)
         return self.db.scalar(stmt) is not None
 
-    def get_all(self, pag: int, cantidad: int) -> tuple[list[Farmaceuta], int]:
+    def get_all(self, pag: int, cantidad: int):
         stmt = select(Farmaceuta)
         count_stmt = select(func.count()).select_from(stmt.subquery())
         total = self.db.execute(count_stmt).scalar_one()
