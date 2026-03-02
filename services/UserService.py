@@ -96,7 +96,7 @@ class UserService:
     def GetUsers(self, rol: int, estado: int, pag:int, cantidad: int):
         if(rol != None and not self.rolRepo.exists_by_id(rol)):
             return Response.error("Rol no registrado")
-        if(estado != None and (estado >0 or estado >1)):
+        if(estado != None and (estado <0 or estado >1)):
             return Response.error("Estado no registrado")
         usuarios, totalElem = self.repo.get_users(rol,estado,pag,cantidad)
         totalPags = math.ceil(totalElem / cantidad)
