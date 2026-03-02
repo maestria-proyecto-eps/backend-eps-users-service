@@ -19,7 +19,7 @@ class UserRepository:
         return self.db.scalar(stmt)
     def add_user(self, user: Usuario):
         self.db.add(user)
-    def get_users(self,rol:int, estado: int, pag: int, cantidad: int) -> Tuple[List["Usuario"], int]:
+    def get_users(self,rol:int, estado: int, pag: int, cantidad: int):
         query = select(Usuario).options(joinedload(Usuario.rol))
         if rol is not None:
 
