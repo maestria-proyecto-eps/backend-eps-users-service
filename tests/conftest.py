@@ -1,9 +1,20 @@
 from pathlib import Path
+import os
 import sys
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
+
+# Tests use an in-memory SQLite DB, but importing the app still loads Settings().
+os.environ.setdefault("DB_ADMIN_USER", "test")
+os.environ.setdefault("DB_ADMIN_PASSWORD", "test")
+os.environ.setdefault("DB_ADMIN_HOST", "localhost")
+os.environ.setdefault("DB_ADMIN_PORT", "5432")
+os.environ.setdefault("DB_ADMIN_NAME", "test_db")
+os.environ.setdefault("JWT_EXPIRES_MINUTES", "60")
+os.environ.setdefault("JWT_SECRET", "test-secret")
+os.environ.setdefault("JWT_ALGORITHM", "HS256")
 
 from models.Rol import Role
 import pytest
