@@ -2,7 +2,7 @@
 
 def test_get_enfermeros_success(client):
     """Prueba obtener lista de enfermeros vacía"""
-    response = client.get("/nurses/")
+    response = client.get("/api/nurses/")
     assert response.status_code == 200
     assert isinstance(response.json()["data"]["data"], list)
 
@@ -14,7 +14,7 @@ def test_create_enfermero_success(client, test_usuario):
         "estado": 1,
         "id_usuario": 2
     }
-    response = client.post("/nurses/", json=data)
+    response = client.post("/api/nurses/", json=data)
     assert response.status_code == 201
     assert response.json()["hasError"] == False
     assert response.json()["data"]["nombres"] == data["nombres"]
@@ -27,7 +27,7 @@ def test_create_enfermero_usuario_inexistente(client):
         "estado": 1,
         "id_usuario": 9999
     }
-    response = client.post("/nurses/", json=data)
+    response = client.post("/api/nurses/", json=data)
     assert response.status_code == 400  # llega al service
     assert response.json()["hasError"] == True
 
@@ -37,7 +37,7 @@ def test_update_enfermero_success(client):
         "nombres": "Laura Actualizada",
         "estado": 0
     }
-    response = client.put("/nurses/123456789", json=data)
+    response = client.put("/api/nurses/123456789", json=data)
     assert response.status_code == 200
     assert response.json()["hasError"] == False
     assert response.json()["data"]["nombres"] == data["nombres"]
@@ -47,6 +47,6 @@ def test_update_enfermero_not_found(client):
     data = {
         "nombres": "Inexistente"
     }
-    response = client.put("/nurses/9999", json=data)
+    response = client.put("/api/nurses/9999", json=data)
     assert response.status_code == 400
     assert response.json()["hasError"] == True

@@ -43,6 +43,6 @@ def root():
     return {
         "message": "ok"
     }
-app.include_router(usersRouter.router)
-app.include_router(enfermeroRouter.router)
-app.include_router(farmaceutaRouter.router)
+app.include_router(usersRouter.router, prefix="/api")
+app.include_router(enfermeroRouter.router, prefix="/api")
+app.include_router(farmaceutaRouter.router, prefix="/api")
