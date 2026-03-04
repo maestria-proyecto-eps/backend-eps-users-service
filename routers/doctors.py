@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Header, status
 from sqlalchemy.orm import Session
 from db.session import get_db
 from models.doctor import Doctor
+from models.specialty import Specialty
 from schemas.doctor import DoctorCreate, DoctorResponse, DoctorUpdateSpecialty
 from typing import List
 from typing import Optional
@@ -80,10 +81,19 @@ def update_doctor_specialty(
     if not db_doctor:
         raise HTTPException(status_code=404, detail="Médico no encontrado")
 
-    # 3. Actualizar solo el campo de especialidad
+    # 3. Verificar que la nueva especialidad exista en la DB
+    specialty_exists = db.query(Specialty).filter(Specialty.id_especialidad == payload.id_especialidad).first()
+
+    if not specialty_exists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"La especialidad con ID {payload.id_especialidad} no existe. Por favor verifique el catálogo."
+        )
+
+    # 4. Actualizar solo el campo de especialidad
     db_doctor.id_especialidad = payload.id_especialidad
 
-    # 4. Guardar cambios en PostgreSQL
+    # 5. Guardar cambios en PostgreSQL
     db.commit()
     db.refresh(db_doctor)
 

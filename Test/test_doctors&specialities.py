@@ -53,17 +53,24 @@ def test_create_doctor():
 
 # 4. Prueba cambiar especialidad a doctor (Usando un médico de la SEMILLA)
 def test_update_doctor_specialty():
-    # Usa al médico Alejandro Ruiz (ID: 80112457) que ya está en la DB
+    # Actualización Exitosa
     doctor_id_semilla = 80112457
-
-    # Cambia de Medicina General (1) a Pediatría (3)
     update_payload = {"id_especialidad": 3}
     response = client.put(f"/api/doctors/{doctor_id_semilla}/specialty", json=update_payload)
 
     assert response.status_code == 200
     assert response.json()["id_especialidad"] == 3
 
-    # REVERSIÓN: Devuelve al médico a su estado original para no alterar la semilla permanentemente
+    # Especialidad inexistente
+    # Usa un ID de especialidad que se sabe que no existe (ej: 9999)
+    payload_invalido = {"id_especialidad": 9999}
+    response_error = client.put(f"/api/doctors/{doctor_id_semilla}/specialty", json=payload_invalido)
+
+
+    assert response_error.status_code == 400
+    assert "no existe" in response_error.json()["detail"]
+
+    # REVERSIÓN
     client.put(f"/api/doctors/{doctor_id_semilla}/specialty", json={"id_especialidad": 1})
 
 # 5. Prueba doctor no encontrado
