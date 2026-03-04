@@ -41,6 +41,15 @@ TestingSessionLocal = sessionmaker(
     bind=engine
 )
 
+
+@pytest.fixture
+def db_session():
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 def override_get_db():
     db = TestingSessionLocal()
     try:
