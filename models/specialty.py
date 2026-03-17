@@ -10,6 +10,5 @@ class Specialty(Base):
     id_especialidad = Column(Integer, primary_key=True, index=True)
     nombre_especialidad = Column(String(50), nullable=False)
     requiere_remision = Column(Boolean, default=False)
-    #dependencia = Column(String(100), nullable=True)
 
     medicos = relationship("Doctor", back_populates="specialty")

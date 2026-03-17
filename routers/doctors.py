@@ -1,99 +1,93 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Header, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from db.session import get_db
 from models.doctor import Doctor
 from models.specialty import Specialty
+from models.doctor import Persona
 from schemas.doctor import DoctorCreate, DoctorResponse, DoctorUpdateSpecialty
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 router = APIRouter(prefix="/api/doctors", tags=["Doctors"])
 
-# CREACIÓN DE DOCTORES
-@router.post("/", response_model=DoctorResponse)
+# 1. CREACIÓN DE DOCTORES
+@router.post("/", response_model=DoctorResponse, status_code=status.HTTP_201_CREATED)
 def create_doctor(
         doctor: DoctorCreate,
         db: Session = Depends(get_db),
 ):
-    existdoctor = db.query(Doctor).filter(Doctor.id_medico == doctor.id_medico).first()
-    if existdoctor:
-        raise HTTPException(status_code=400, detail="El ID de médico ya está registrado")
+    # VALIDACIÓN 1: ¿Existe la persona en la DB administrativa?
+    # id_medico DEBE ser un num_documento válido en la tabla PERSONA
+    person_exists = db.query(Persona).filter(Persona.num_documento == doctor.id_medico).first()
+    if not person_exists:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No se puede crear el médico. La persona con documento {doctor.id_medico} no existe en el sistema administrativo."
+        )
 
+    # VALIDACIÓN 2: ¿Ya es médico?
+    exist_doctor = db.query(Doctor).filter(Doctor.id_medico == doctor.id_medico).first()
+    if exist_doctor:
+        raise HTTPException(status_code=400, detail="Este documento ya está registrado como médico")
+
+    # VALIDACIÓN 3: ¿Existe la especialidad?
+    specialty_exists = db.query(Specialty).filter(Specialty.id_especialidad == doctor.id_especialidad).first()
+    if not specialty_exists:
+        raise HTTPException(status_code=404, detail="La especialidad especificada no existe")
+
+    # CREACIÓN: Solo usa los campos que existen en la tabla MEDICOS
     db_doctor = Doctor(
         id_medico=doctor.id_medico,
-        nombres=doctor.nombres,
-        apellidos=doctor.apellidos,
         num_licencia=doctor.num_licencia,
-        id_especialidad=doctor.id_especialidad,
-        id_usuario=doctor.id_usuario,
-        estado=doctor.estado
+        id_especialidad=doctor.id_especialidad
     )
-    db.add(db_doctor)
-    db.commit()
-    db.refresh(db_doctor)
-    return db_doctor
 
-# REQUEST DE DOCTOR SEGÚN SU ESPECIALIDAD
-@router.get("/by-specialty/", response_model=List[DoctorResponse])
-def get_doctors_by_specialty(
-        id_especialidad: Optional[int] = Query(None, description="Filtrar doctores por el ID de su especialidad"),
+    try:
+        db.add(db_doctor)
+        db.commit()
+        db.refresh(db_doctor)
+        return db_doctor
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al guardar en base de datos: {str(e)}")
+
+# 2. LISTADO DE DOCTORES (CON FILTRO O TOTAL)
+@router.get("/by-specialty/{specialty_id}", response_model=List[DoctorResponse])
+def get_doctors(
+        id_especialidad: Optional[int] = Query(None, description="Filtrar por ID de especialidad"),
         db: Session = Depends(get_db)
 ):
     """
-        ### Obtiene la lista de doctores.
-        Permite visualizar todos los médicos registrados o filtrar por una especialidad específica.
-
-        **Guía rápida de IDs de especialidades:**
-        * **1**: Medicina General
-        * **2**: Pediatría
-        * **3**: Cardiología
-        * **4**: Ginecología
-        * **5**: Dermatología
-        * **6**: Neurología
-        * **7**: Psiquiatría
-        * **8**: Ortopedia
-
-        *Si no se proporciona un ID, el sistema devolverá el listado completo.*
-        """
-
+    Obtiene la lista de doctores. Gracias al 'relationship' en el modelo,
+    traerá automáticamente nombres y apellidos desde la tabla PERSONA.
+    """
     query = db.query(Doctor)
 
     if id_especialidad is not None:
         query = query.filter(Doctor.id_especialidad == id_especialidad)
 
-    return query.all() # Devolverá todos los MEDICOS si no se da una id de especialidad
+    return query.all()
 
-# CAMBIO DE ESPECIALIDAD DENTRO DE LA EPS PARA EL MEDICO (SOLO HR)
+# 3. CAMBIO DE ESPECIALIDAD
 @router.put("/{id_medico}/specialty", response_model=DoctorResponse)
 def update_doctor_specialty(
         id_medico: int,
         payload: DoctorUpdateSpecialty,
         db: Session = Depends(get_db),
 ):
-    """
-    ### Asigna o cambia la especialidad de un médico.
-    Recibe el ID del médico en la URL y el nuevo ID de especialidad en el cuerpo (JSON).
-    """
-    # 1. Buscar al doctor por su ID
+    # 1. Buscar al doctor
     db_doctor = db.query(Doctor).filter(Doctor.id_medico == id_medico).first()
-
-    # 2. Si no existe, lanzar error 404
     if not db_doctor:
         raise HTTPException(status_code=404, detail="Médico no encontrado")
 
-    # 3. Verificar que la nueva especialidad exista en la DB
+    # 2. Verificar la nueva especialidad
     specialty_exists = db.query(Specialty).filter(Specialty.id_especialidad == payload.id_especialidad).first()
-
     if not specialty_exists:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"La especialidad con ID {payload.id_especialidad} no existe. Por favor verifique el catálogo."
+            status_code=400,
+            detail="La especialidad no existe."
         )
 
-    # 4. Actualizar solo el campo de especialidad
     db_doctor.id_especialidad = payload.id_especialidad
-
-    # 5. Guardar cambios en PostgreSQL
     db.commit()
     db.refresh(db_doctor)
 

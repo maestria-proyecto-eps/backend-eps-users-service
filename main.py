@@ -5,7 +5,7 @@ from core.logger import setup_logging
 from db.session import SessionLocal, engine
 from db.session import Base
 
-from routers import specialties, doctors, schedules
+from routers import specialties, doctors
 
 app = FastAPI(
     title="EPS API 2",
@@ -27,7 +27,6 @@ setup_logging()
 
 app.include_router(specialties.router)
 app.include_router(doctors.router)
-#app.include_router(schedules.router)
 
 @app.get("/")
 def root():
