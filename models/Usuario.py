@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, Column, ForeignKey, Integer, SmallInteger, String, TIMESTAMP
+from sqlalchemy import BigInteger, Column, ForeignKey, Integer, SmallInteger, String, TIMESTAMP, Boolean
 from sqlalchemy.orm import  relationship
 from db.session import Base 
 
@@ -6,13 +6,14 @@ from db.session import Base
 class Usuario(Base):
     __tablename__ = "usuarios"
     id_usuario= Column(Integer, primary_key=True)
-    num_documento= Column(BigInteger, nullable=False)
+    num_documento= Column(BigInteger, ForeignKey("persona.num_documento"), nullable=True)
     password= Column(String(60), nullable=False)
     id_rol= Column(Integer,ForeignKey("roles.id_rol"), nullable=False)
-    estado= Column(SmallInteger, nullable=False)
+    estado= Column(Boolean, nullable=False)
     intentos_login = Column(SmallInteger, nullable=False,default=0)
     tiempo_de_fallo_login = Column(TIMESTAMP, nullable=True)
     rol = relationship("Role", back_populates="usuarios")
+    persona = relationship("Persona", back_populates="usuario")
 
     @property
     def rol_des(self):

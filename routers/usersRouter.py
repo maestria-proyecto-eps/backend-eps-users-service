@@ -29,10 +29,12 @@ def createUser(
 
 @router.get("/", response_model=Response[PaginatedResponse[UserResponse]])
 def GetUsers(
-    rol:int=None,estado:int=None,pag:int=1,cantidad:int=30,
+    rol:int=None,estado:int=None,num_document:int=None,
+    nombres:str=None,apellidos:str=None,
+    pag:int=1,cantidad:int=30,
     service: UserService = Depends(getUserService)
 ):
-    model = service.GetUsers(rol,estado,pag,cantidad)
+    model = service.GetUsers(rol,estado,num_document,nombres,apellidos,pag,cantidad)
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse()
@@ -98,4 +100,3 @@ def UpdatePasswordUser(
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse()
-

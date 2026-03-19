@@ -67,27 +67,50 @@ def test_rol():
     db.add(rol)
     db.commit()
     db.refresh(rol)
-    return rol
+    yield rol
+    from models.Usuario import Usuario
+    db.query(Usuario).filter(Usuario.id_rol == 1).delete()
+    db.commit()
+    db.delete(rol)
+    db.commit()
+    db.close()
     
    
+@pytest.fixture
+def test_persona(test_rol):
+    from models.Persona import Persona
+    db = TestingSessionLocal()
+    persona = Persona(
+        num_documento=123456789,
+        nombres="Laura",
+        apellidos="Gomez"
+    )
+    db.add(persona)
+    db.commit()
+    db.refresh(persona)
+    yield persona
+    db.delete(persona)
+    db.commit()
+    db.close()
 
 @pytest.fixture
-def test_usuario(test_rol):
+def test_user(test_persona, test_rol):
     from models.Usuario import Usuario
     db = TestingSessionLocal()
 
     usuario = Usuario(
-        id_usuario=2,
         num_documento=123456789,
         password="abc123456",
         id_rol=1,
-        estado=1
+        estado=True
     )
     db.add(usuario)
     db.commit()
     db.refresh(usuario)
-
-    return usuario
+    yield usuario
+    db.delete(usuario)
+    db.commit()
+    db.close()
 
 
 @pytest.fixture()

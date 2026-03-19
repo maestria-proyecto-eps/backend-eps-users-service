@@ -1,11 +1,11 @@
 from pydantic import BaseModel, Field
 
-class EnfermeroResponse(BaseModel):
-    id: int = Field(alias="id_enfermero")
+
+class PersonaResponse(BaseModel):
+    num_documento: int
     nombres: str
     apellidos: str
-    estado: int
-    id_usuario: int
+
 
     model_config = {
         "from_attributes": True,
