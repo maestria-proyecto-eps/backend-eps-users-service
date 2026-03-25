@@ -10,7 +10,7 @@ def test_get_users_success(client):
 def test_create_user_success(client, test_persona):
     """Prueba crear un nuevo usuario"""
     user_data = {
-        "num_documento": 123456,
+        "num_documento": test_persona.num_documento,
         "password": "abc123456",
         "id_rol": 1
     }
@@ -30,10 +30,10 @@ def test_get_user_by_id_not_found(client):
     response = client.get("/api/users/9999")
     assert response.status_code == 400
 
-def test_create_user_invalid_data(client):
+def test_create_user_invalid_rol(client, test_persona):
     """Prueba crear usuario con datos inválidos"""
     user_data = {
-        "num_documento": 999999,
+        "num_documento": test_persona.num_documento,
         "password": "abc123456",
         "id_rol": 9999
     }
