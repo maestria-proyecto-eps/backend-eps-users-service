@@ -11,15 +11,20 @@ from schemas.response.GenericPaginatedResponse import PaginatedResponse
 from schemas.response.GenericResponse import Response
 from schemas.response.UserResponse import UserResponse
 from services.repositories import RolRepository
+from services.repositories.PersonaRepository import PersonaRepository
 from services.repositories.UserRepository import UserRepository
 from services.helpers.security import Security
 
 
 class UserService:
-    def __init__(self, repo: UserRepository, rolRepo: RolRepository):
+    def __init__(self, repo: UserRepository, rolRepo: RolRepository, personaRepo: PersonaRepository):
         self.repo = repo
-        self.rolRepo = rolRepo
+        self.rolRepo = rolRepo 
+        self.personaRepo = personaRepo
     def AddUser(self, userData: UserCreate):
+        if (not self.personaRepo.exists_by_documento(userData.num_documento)):
+            return Response.error("Persona no encontrada. Registre primero la persona antes de crear el usuario",
+                                  status_code=404)
         if(self.repo.exists_by_numId(userData.num_documento)):
             return Response.error("Número de identificación ya registrado")
         if(not self.rolRepo.exists_by_id(userData.id_rol)):
