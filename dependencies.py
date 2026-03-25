@@ -15,8 +15,8 @@ def getPersonaRepository(db=Depends(get_db)) -> PersonaRepository:
     return PersonaRepository(db)
 
 #Services
-def getUserService(userRepo = Depends(getUserRepository), rolRepo = Depends(getRolRepository)) -> UserService:
-    return UserService(userRepo, rolRepo)
+def getUserService(userRepo = Depends(getUserRepository), rolRepo = Depends(getRolRepository), personaRepo = Depends(getPersonaRepository)) -> UserService:
+    return UserService(userRepo, rolRepo, personaRepo)
 def getPersonaService(
     personaRepo=Depends(getPersonaRepository)) -> PersonaService:
     return PersonaService(personaRepo)

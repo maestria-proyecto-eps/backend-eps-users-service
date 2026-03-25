@@ -24,12 +24,13 @@ def createUser(
 ):
     model = service.AddUser(user)
     if(model.hasError):
-        return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
+        status_code = model.statusCode if model.statusCode != status.HTTP_200_OK else status.HTTP_400_BAD_REQUEST
+        return model.toHttpResponse(status_code)
     return model.toHttpResponse(status.HTTP_201_CREATED)
 
 @router.get("/", response_model=Response[PaginatedResponse[UserResponse]])
 def GetUsers(
-    rol:int=None,estado:int=None,num_document:int=None,
+    rol:int=None,estado:bool=None,num_document:int=None,
     nombres:str=None,apellidos:str=None,
     pag:int=1,cantidad:int=30,
     service: UserService = Depends(getUserService)
