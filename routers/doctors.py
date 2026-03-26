@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, aliased
 from db.session import get_db
-from models.doctor import Doctor, Persona
+from models.doctor import Doctor
+from models.Persona import Persona
 from models.specialty import Specialty, SpecialtyRemission
 from schemas.doctor import DoctorCreate, DoctorResponse, DoctorUpdateSpecialty
 from schemas.specialty import SpecialtyResponse, SpecialtyRemissionResponse
