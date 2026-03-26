@@ -1,11 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from core.logger import setup_logging
-from db.session import SessionLocal, engine
-from db.session import Base
-
-from routers import specialties, doctors
+from core.logger import setup_logging, get_logger
+from routers import usersRouter, personaRouter
 
 app = FastAPI(
     title="EPS API 2",
@@ -13,8 +9,8 @@ app = FastAPI(
     version="0.1"
 )
 
-# Configuración de CORS
 origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -25,8 +21,8 @@ app.add_middleware(
 
 setup_logging()
 
-app.include_router(specialties.router)
-app.include_router(doctors.router)
+# Logger call example
+#logger = get_logger(__name__)
 
 @app.get("/")
 def root():
@@ -42,8 +38,10 @@ def root():
     }
 
 @app.get("/health")
-def root():
+def health():
     """health endpoint"""
     return {
         "message": "ok"
     }
+app.include_router(usersRouter.router, prefix="/api")
+app.include_router(personaRouter.router, prefix="/api")
