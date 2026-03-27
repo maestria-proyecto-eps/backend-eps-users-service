@@ -1,44 +1,33 @@
-# db/session.py
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
-from sqlalchemy.orm import declarative_base # Moderno
+from sqlalchemy import NullPool, create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+from core.config import settings
 
-import os
+USER = settings.DB_ADMIN_USER
+PASSWORD = settings.DB_ADMIN_PASSWORD
+HOST = settings.DB_ADMIN_HOST
+PORT = settings.DB_ADMIN_PORT
+DBNAME = settings.DB_ADMIN_NAME
 
-BaseAdmin = declarative_base()      # Para Médicos, Personas, etc.
-BaseOperative = declarative_base()   # Para Agenda, Citas, etc.
+DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
 
-load_dotenv()
+# Crear engine (sincrónico)
+engine = create_engine(
+    DATABASE_URL,
+    poolclass=NullPool
+)
 
-def get_url(prefix):
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+)
 
-    user = os.getenv(f"{prefix}_USER")
-    password = os.getenv(f"{prefix}_PASSWORD")
-    host = os.getenv(f"{prefix}_HOST")
-    port = os.getenv(f"{prefix}_PORT", "5432")
-    db_name = os.getenv(f"{prefix}_NAME", "postgres")
+Base = declarative_base()
 
-    return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
 
-# Motores
-engine_admin = create_engine(get_url("DB_ADMIN"))
-engine_oper = create_engine(get_url("DB_OPER"))
-
-# Fábricas de Sesiones
-SessionAdmin = sessionmaker(autocommit=False, autoflush=False, bind=engine_admin)
-SessionOper = sessionmaker(autocommit=False, autoflush=False, bind=engine_oper)
-
-# Dependencias para los endpoints de FastAPI
-def get_db_admin():
-    db = SessionAdmin()
-    try:
-        yield db
-    finally:
-        db.close()
-
-def get_db_oper():
-    db = SessionOper()
+# Dependency para FastAPI
+def get_db():
+    db = SessionLocal()
     try:
         yield db
     finally:
