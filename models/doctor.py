@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, SmallInteger, ForeignKey, BigInt
 from sqlalchemy.orm import relationship
 from db.session import Base
 
-# CLASE REALIZADA CON FINALIDAD DE PRUEBAS
+
 
 class Doctor(Base):
     __tablename__ = "medicos"
