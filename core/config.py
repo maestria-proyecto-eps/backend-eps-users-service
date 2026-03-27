@@ -9,11 +9,11 @@ class Settings(BaseSettings):
     DB_ADMIN_NAME: str
 
     # --- CONFIGURACIÓN BASE DE DATOS OPERATIVA ---
-    DB_OPERATIVE_USER: str
-    DB_OPERATIVE_PASSWORD: str
-    DB_OPERATIVE_HOST: str
-    DB_OPERATIVE_PORT: int = 5432
-    DB_OPERATIVE_NAME: str
+    DB_OP_USER: str
+    DB_OP_PASSWORD: str
+    DB_OP_HOST: str
+    DB_OP_PORT: int = 5432
+    DB_OP_NAME: str
 
     # --- JWT ---
     JWT_EXPIRES_MINUTES: int

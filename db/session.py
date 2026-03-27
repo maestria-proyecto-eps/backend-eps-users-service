@@ -15,8 +15,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 OPERATIVE_URL = (
-    f"postgresql+psycopg2://{settings.DB_OPERATIVE_USER}:{settings.DB_OPERATIVE_PASSWORD}@"
-    f"{settings.DB_OPERATIVE_HOST}:{settings.DB_OPERATIVE_PORT}/{settings.DB_OPERATIVE_NAME}?sslmode=require"
+    f"postgresql+psycopg2://{settings.DB_OP_USER}:{settings.DB_OP_PASSWORD}@"
+    f"{settings.DB_OP_HOST}:{settings.DB_OP_PORT}/{settings.DB_OP_NAME}?sslmode=require"
 )
 
 operative_engine = create_engine(OPERATIVE_URL, poolclass=NullPool)
