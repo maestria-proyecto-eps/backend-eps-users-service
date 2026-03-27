@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from db.session import get_db_admin, get_db_oper
-from models.schedule import Agenda, Doctor
+from db.session import get_db, get_db_operative
+from models.schedule import Agenda
+from models.doctor import Doctor
 from schemas.schedule import ScheduleCreate, ScheduleResponse, TimeSlot
 from typing import List, Optional
 from datetime import datetime, timedelta, date
@@ -11,8 +12,8 @@ router = APIRouter(prefix="/api/schedules", tags=["Schedules"])
 @router.post("/", response_model=ScheduleResponse)
 def create_schedule(
         schedule: ScheduleCreate,
-        db_admin: Session = Depends(get_db_admin),
-        db_oper: Session = Depends(get_db_oper)
+        db_admin: Session = Depends(get_db),
+        db_oper: Session = Depends(get_db_operative)
 ):
     # 1. Validación de existencia del médico en la DB Administrativa
     # Se verifica que el ID proporcionado corresponda a un registro real en la otra base de datos
@@ -43,7 +44,7 @@ def create_schedule(
     return db_agenda
 
 @router.get("/", response_model=List[ScheduleResponse])
-def get_schedules(id_agenda: Optional[int] = None, db_oper: Session = Depends(get_db_oper)):
+def get_schedules(id_agenda: Optional[int] = None, db_oper: Session = Depends(get_db_operative)):
     query = db_oper.query(Agenda)
 
     if id_agenda:
@@ -55,7 +56,7 @@ def get_schedules(id_agenda: Optional[int] = None, db_oper: Session = Depends(ge
     return query.all()
 
 @router.get("/doctor/{id_doctor}", response_model=List[ScheduleResponse])
-def get_doctor_schedules(id_doctor: int, db_oper: Session = Depends(get_db_oper)):
+def get_doctor_schedules(id_doctor: int, db_oper: Session = Depends(get_db_operative)):
     """Obtiene la agenda histórica y futura de un médico desde la DB Operativa."""
     return db_oper.query(Agenda).filter(Agenda.id_doctor == id_doctor).all()
 
@@ -63,7 +64,7 @@ def get_doctor_schedules(id_doctor: int, db_oper: Session = Depends(get_db_oper)
 def update_schedule(
         id_agenda: int,
         payload: ScheduleCreate,
-        db_oper: Session = Depends(get_db_oper)
+        db_oper: Session = Depends(get_db_operative)
 ):
     db_agenda = db_oper.query(Agenda).filter(Agenda.id_agenda == id_agenda).first()
     if not db_agenda:
@@ -90,7 +91,7 @@ def update_schedule(
     return db_agenda
 
 @router.delete("/{id_agenda}", status_code=204)
-def delete_schedule(id_agenda: int, db_oper: Session = Depends(get_db_oper)):
+def delete_schedule(id_agenda: int, db_oper: Session = Depends(get_db_operative)):
     db_agenda = db_oper.query(Agenda).filter(Agenda.id_agenda == id_agenda).first()
     if not db_agenda:
         raise HTTPException(status_code=404, detail="No existe el registro")
@@ -105,7 +106,7 @@ def generate_slots(
         id_doctor: int,
         fecha: date,
         duracion_minutos: int = 20,
-        db_oper: Session = Depends(get_db_oper)
+        db_oper: Session = Depends(get_db_operative)
 ):
     """
     Divide los bloques de agenda de la DB Operativa en slots de tiempo específicos.

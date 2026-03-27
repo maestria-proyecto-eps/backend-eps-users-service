@@ -8,7 +8,7 @@ from schemas.doctor import DoctorCreate, DoctorResponse, DoctorUpdateSpecialty
 from schemas.specialty import SpecialtyResponse, SpecialtyRemissionResponse
 from typing import List, Optional
 
-router = APIRouter(prefix="/api", tags=["Management"])
+router = APIRouter(prefix="/api", tags=["Doctors"])
 
 # --- SECCIÓN: MÉDICOS ---
 
