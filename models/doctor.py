@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 from db.session import Base
 
 
-
 class Doctor(Base):
     __tablename__ = "medicos"
 
