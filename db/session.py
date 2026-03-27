@@ -10,24 +10,28 @@ DBNAME = settings.DB_ADMIN_NAME
 
 DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
 
-# Crear engine (sincrónico)
-engine = create_engine(
-    DATABASE_URL,
-    poolclass=NullPool
-)
-
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-)
-
+engine = create_engine(DATABASE_URL, poolclass=NullPool)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+OPERATIVE_URL = (
+    f"postgresql+psycopg2://{settings.DB_OP_USER}:{settings.DB_OP_PASSWORD}@"
+    f"{settings.DB_OP_HOST}:{settings.DB_OP_PORT}/{settings.DB_OP_NAME}?sslmode=require"
+)
 
-# Dependency para FastAPI
+operative_engine = create_engine(OPERATIVE_URL, poolclass=NullPool)
+SessionOperative = sessionmaker(autocommit=False, autoflush=False, bind=operative_engine)
+BaseOperative = declarative_base()
+
 def get_db():
     db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+def get_db_operative():
+    db = SessionOperative()
     try:
         yield db
     finally:
