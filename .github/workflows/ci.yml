@@ -26,24 +26,38 @@ jobs:
       - run: flake8 . --count --max-line-length=120 --statistics --exit-zero
 
   test:
-    name: Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-      - run: pip install -r requirements.txt
-      - name: Run tests
-        run: |
-          if [ -d "tests" ] && find tests -name "test_*.py" | grep -q .; then
-            pip install pytest
-            PYTHONPATH=. pytest tests/ -v
-          else
-            echo "No tests found — skipping"
-          fi
-
+      name: Tests
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-python@v5
+          with:
+            python-version: "3.12"
+            cache: pip
+        - run: pip install -r requirements.txt
+        - name: Run tests
+          env:
+            DB_ADMIN_USER: ${{ secrets.DB_ADMIN_USER }}
+            DB_ADMIN_PASSWORD: ${{ secrets.DB_ADMIN_PASSWORD }}
+            DB_ADMIN_HOST: ${{ secrets.DB_ADMIN_HOST }}
+            DB_ADMIN_PORT: ${{ secrets.DB_ADMIN_PORT }}
+            DB_ADMIN_NAME: ${{ secrets.DB_ADMIN_NAME }}
+            DB_OP_USER: ${{ secrets.DB_OP_USER }}
+            DB_OP_PASSWORD: ${{ secrets.DB_OP_PASSWORD }}
+            DB_OP_HOST: ${{ secrets.DB_OP_HOST }}
+            DB_OP_PORT: ${{ secrets.DB_OP_PORT }}
+            DB_OP_NAME: ${{ secrets.DB_OP_NAME }}
+            JWT_SECRET: ${{ secrets.JWT_SECRET }}
+            JWT_EXPIRES_MINUTES: ${{ secrets.JWT_EXPIRES_MINUTES }}
+            JWT_ALGORITHM: ${{ secrets.JWT_ALGORITHM }}
+          run: |
+            if [ -d "tests" ] && find tests -name "test_*.py" | grep -q .; then
+              pip install pytest
+              PYTHONPATH=. pytest tests/ -v
+            else
+              echo "No tests found — skipping"
+            fi
+            
   branch-policy:
     name: Branch Policy
     runs-on: ubuntu-latest
