@@ -46,6 +46,8 @@ def health():
     }
 
 
+app.include_router(usersRouter.router, prefix="/api")
+app.include_router(personaRouter.router, prefix="/api")
 
 app.include_router(doctors.router)
 app.include_router(specialties.router)
