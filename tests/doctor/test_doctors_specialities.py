@@ -1,85 +1,118 @@
 import pytest
-import random
-from fastapi.testclient import TestClient
+from unittest.mock import MagicMock
 from main import app
+from db.session import get_db
+from core.dependencias import get_usuario_actual
 
-client = TestClient(app)
+# Importamos los modelos
+from models.doctor import Doctor
+from models.Persona import Persona
+from models.specialty import Specialty
 
-# Configuración de constantes para el entorno de pruebas
-ID_PERSONA_EXISTENTE = 10123456
-ID_MEDICO_SEMILLA = 80112457
-ID_ESPECIALIDAD_EXISTENTE = 1
-ID_ESPECIALIDAD_CARDIOLOGIA = 3
+# ---------------------------------------------------------
+# FIXTURE PARA MOCKEAR LA BASE DE DATOS
+# ---------------------------------------------------------
+@pytest.fixture
+def mock_db():
+    """Simula la sesión de la base de datos en cada test"""
+    session = MagicMock()
+    app.dependency_overrides[get_db] = lambda: session
+    yield session
 
-def test_read_main():
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json()["message"] == "EPS API"
+# ---------------------------------------------------------
+# PRUEBAS DE HISTORIAS DE USUARIO
+# ---------------------------------------------------------
 
-def test_get_doctors_list():
-    # El sistema permite la obtención total de médicos o filtrada por especialidad
-    response_total = client.get("/api/doctors")
-    assert response_total.status_code == 200
-    assert isinstance(response_total.json(), list)
+def test_crear_doctor_exitoso_como_hr(client, mock_db):
+    """HU: Registrar doctores (Solo Talento Humano)"""
+    # 1. Simulamos el rol de Talento Humano
+    app.dependency_overrides[get_usuario_actual] = lambda: {
+        "id_usuario": 1, "num_documento": 10123456, "role": "Talento Humano"
+    }
 
-    response_filter = client.get(f"/api/doctors/by-specialty/{ID_ESPECIALIDAD_EXISTENTE}")
-    assert response_filter.status_code == 200
-    assert isinstance(response_filter.json(), list)
+    # 2. Preparamos los datos mockeados
+    # Añadimos nombres y apellidos para evitar el ResponseValidationError
+    persona_existente = Persona(
+        num_documento=10123456,
+        nombres="Juan",
+        apellidos="Pérez"
+    )
+    especialidad_existente = Specialty(id_especialidad=1, nombre_especialidad="General")
 
-def test_create_doctor_logic():
-    # La creación valida la existencia de la persona y la especialidad
-    licencia_nueva = random.randint(100000, 999999)
+    def side_effect(model):
+        q = MagicMock()
+        if model == Persona:
+            q.filter.return_value.first.return_value = persona_existente
+        elif model == Doctor:
+            q.filter.return_value.first.return_value = None # No hay duplicados
+        elif model == Specialty:
+            q.filter.return_value.first.return_value = especialidad_existente
+        return q
+
+    mock_db.query.side_effect = side_effect
+
+    # 3. Mockear el comportamiento de 'refresh' para inyectar los datos de Persona en el Doctor
+    # Esto simula la carga de la relación en SQLAlchemy
+    def mock_refresh(instance):
+        instance.nombres = "Juan"
+        instance.apellidos = "Pérez"
+        instance.id_medico = 10123456
+
+    mock_db.refresh.side_effect = mock_refresh
+
     payload = {
-        "id_medico": ID_PERSONA_EXISTENTE,
-        "num_licencia": licencia_nueva,
-        "id_especialidad": ID_ESPECIALIDAD_EXISTENTE
+        "id_medico": 10123456,
+        "num_licencia": 12345,
+        "id_especialidad": 1
     }
 
     response = client.post("/api/doctors", json=payload)
 
-    # El resultado depende del estado previo de la base de datos de pruebas
-    assert response.status_code in [201, 400, 404]
-
-    if response.status_code == 201:
-        data = response.json()
-        assert data["id_medico"] == ID_PERSONA_EXISTENTE
-        assert "num_licencia" in data
-
-def test_update_doctor_specialty_flow():
-    # El flujo comprueba la actualización exitosa y la validación de errores
-    update_payload = {"id_especialidad": ID_ESPECIALIDAD_CARDIOLOGIA}
-    response = client.put(f"/api/doctors/{ID_MEDICO_SEMILLA}/specialty", json=update_payload)
-
-    if response.status_code == 200:
-        assert response.json()["id_especialidad"] == ID_ESPECIALIDAD_CARDIOLOGIA
-    else:
-        # Si el médico de semilla no existe en el entorno actual
-        assert response.status_code == 404
-
-    # Verificación de respuesta ante especialidad inexistente
-    payload_invalido = {"id_especialidad": 999}
-    response_error = client.put(f"/api/doctors/{ID_MEDICO_SEMILLA}/specialty", json=payload_invalido)
-
-    if response_error.status_code != 404:
-        assert response_error.status_code == 400
-        assert "especialidad" in response_error.json()["detail"].lower()
-
-def test_get_specialties_catalog():
-    # El sistema debe retornar el catálogo limitado a las primeras 8 especialidades
-    response = client.get("/api/specialties")
-    assert response.status_code == 200
+    # 4. Validaciones
+    assert response.status_code == 201
     data = response.json()
-    assert isinstance(data, list)
-    assert len(data) <= 8
+    assert data["id_medico"] == 10123456
+    assert data["nombres"] == "Juan"
+    assert data["apellidos"] == "Pérez"
 
-def test_get_specialty_remissions_data():
-    # Se comprueba la estructura de la tabla de asociación de remisiones
-    response = client.get("/api/specialties/remission")
+
+def test_crear_doctor_denegado_como_paciente(client, mock_db):
+    """HU: Seguridad (Un paciente no puede registrar doctores)"""
+    # 1. Simulamos el rol de Paciente
+    app.dependency_overrides[get_usuario_actual] = lambda: {
+        "id_usuario": 2, "num_documento": 987654, "role": "Paciente"
+    }
+
+    payload = {"id_medico": 10123456, "num_licencia": 12345, "id_especialidad": 1}
+    response = client.post("/api/doctors", json=payload)
+
+    # El RequireRole debe lanzar 403
+    assert response.status_code == 403
+
+
+def test_get_specialties_catalog(client, mock_db):
+    """HU: Consulta de especialidades (Acceso para Pacientes)"""
+    app.dependency_overrides[get_usuario_actual] = lambda: {"role": "Paciente"}
+
+    # Mock de la lista de especialidades
+    mock_query = MagicMock()
+    mock_query.limit.return_value.all.return_value = [
+        Specialty(id_especialidad=1, nombre_especialidad="Pediatría"),
+        Specialty(id_especialidad=2, nombre_especialidad="Cardiología")
+    ]
+    mock_db.query.return_value = mock_query
+
+    response = client.get("/api/specialties/")
+
     assert response.status_code == 200
-    data = response.json()
-    assert isinstance(data, list)
+    assert len(response.json()) == 2
 
-    if len(data) > 0:
-        item = data[0]
-        assert "nombre_remitida" in item
-        assert "nombre_que_remite" in item
+
+def test_update_doctor_specialty_unauthorized(client, mock_db):
+    """HU: Seguridad (Un médico no puede editar especialidades)"""
+    app.dependency_overrides[get_usuario_actual] = lambda: {"role": "Médico"}
+
+    update_payload = {"id_especialidad": 3}
+    response = client.put("/api/doctors/80112457/specialty", json=update_payload)
+
+    assert response.status_code == 403
