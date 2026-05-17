@@ -13,7 +13,7 @@ def test_create_persona_success(client):
     data = {
         "num_documento": 987654321,
         "nombres": "Carlos",
-        "apellidos": "Ramirez"
+        "apellidos": "Ramirez",
     }
     response = client.post("/api/persons/", json=data)
     assert response.status_code == 201
@@ -26,7 +26,7 @@ def test_create_persona_documento_duplicado(client):
     data = {
         "num_documento": 987654321,
         "nombres": "Jaime",
-        "apellidos": "Ortiz"
+        "apellidos": "Ortiz",
     }
     response = client.post("/api/persons/", json=data)
     assert response.status_code == 400
