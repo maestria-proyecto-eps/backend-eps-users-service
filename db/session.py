@@ -1,7 +1,9 @@
 from sqlalchemy import NullPool, create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from core.config import settings
-
+from fastapi import Depends
+from core.auth_utils import get_current_user_id
+from sqlalchemy import text
 USER = settings.DB_ADMIN_USER
 PASSWORD = settings.DB_ADMIN_PASSWORD
 HOST = settings.DB_ADMIN_HOST
@@ -27,12 +29,61 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+        db.commit()       
+    except Exception:
+        db.rollback() 
+        raise
     finally:
         db.close()
-
+        
 def get_db_operative():
     db = SessionOperative()
     try:
         yield db
+        db.commit()       
+    except Exception:
+        db.rollback() 
+        raise
+    finally:
+        db.close()
+
+        
+def get_db_audit(
+    user_id: int = Depends(get_current_user_id)
+):
+    db = SessionLocal()
+
+    try:
+        db.execute(
+            text("SET LOCAL my.app_user_id = :uid"),
+            {"uid": str(user_id)}
+        )
+        yield db
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise
+
+    finally:
+        db.close()
+        
+def get_db_operative_audit(
+    user_id: int = Depends(get_current_user_id)
+):
+    db = SessionOperative()
+
+    try:
+        db.execute(
+            text("SET LOCAL my.app_user_id = :uid"),
+            {"uid": str(user_id)}
+        )
+        yield db
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise
+
     finally:
         db.close()
