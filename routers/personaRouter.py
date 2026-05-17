@@ -6,7 +6,7 @@ from schemas.response.PersonaResponse import PersonaResponse
 from services.PersonaService import PersonaService
 from schemas.response.GenericResponse import Response
 from schemas.response.GenericPaginatedResponse import PaginatedResponse
-
+from core.dependencias import RequireRole, get_usuario_actual
 
 router = APIRouter(
     prefix="/persons",
@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=Response[PersonaResponse])
+@router.post("/", response_model=Response[PersonaResponse], dependencies=[Depends(RequireRole(["Talento Humano"]))])
 def createPersona(
     persona: PersonaCreate,
     service: PersonaService = Depends(getPersonaService)
@@ -25,7 +25,7 @@ def createPersona(
     return result.toHttpResponse(status.HTTP_201_CREATED)
 
 
-@router.get("/", response_model=Response[PaginatedResponse[PersonaResponse]])
+@router.get("/", response_model=Response[PaginatedResponse[PersonaResponse]], dependencies=[Depends(RequireRole(["Talento Humano"]))])
 def getPersonas(
     pag: int = 1,
     cantidad: int = 30,
@@ -37,7 +37,7 @@ def getPersonas(
     return result.toHttpResponse(status.HTTP_200_OK)
 
 
-@router.get("/{num_documento}", response_model=Response[PersonaResponse])
+@router.get("/{num_documento}", response_model=Response[PersonaResponse], dependencies=[Depends(get_usuario_actual)])
 def getPersonaByDocumento(
     num_documento: int,
     service: PersonaService = Depends(getPersonaService)
@@ -48,7 +48,7 @@ def getPersonaByDocumento(
     return result.toHttpResponse(status.HTTP_200_OK)
 
 
-@router.put("/{num_documento}", response_model=Response[PersonaResponse])
+@router.put("/{num_documento}", response_model=Response[PersonaResponse], dependencies=[Depends(RequireRole(["Talento Humano"]))])
 def updatePersona(
     num_documento: int,
     persona: PersonaUpdate,

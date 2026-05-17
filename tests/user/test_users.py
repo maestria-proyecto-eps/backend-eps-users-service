@@ -1,22 +1,24 @@
-
 """Pruebas unitarias para el router de usuarios"""
+
 
 def test_get_users_success(client):
     """Prueba obtener lista de usuarios"""
     response = client.get("/api/users")
     assert response.status_code == 200
     assert isinstance(response.json()["data"]["data"], list)
-    
+
+
 def test_create_user_success(client, test_persona):
     """Prueba crear un nuevo usuario"""
     user_data = {
         "num_documento": test_persona.num_documento,
         "password": "abc123456",
-        "id_rol": 1
+        "id_rol": 1,
     }
     response = client.post("/api/users", json=user_data)
     assert response.status_code == 201
     assert response.json()["data"]["num_documento"] == user_data["num_documento"]
+
 
 def test_get_user_by_id_success(client, test_user):
     """Prueba obtener usuario por ID"""
@@ -25,40 +27,43 @@ def test_get_user_by_id_success(client, test_user):
     assert response.status_code == 200
     assert response.json()["data"]["id_usuario"] == user_id
 
+
 def test_get_user_by_id_not_found(client):
     """Prueba obtener usuario con ID inexistente"""
     response = client.get("/api/users/9999")
     assert response.status_code == 400
 
+
 def test_create_user_invalid_rol(client, test_persona):
-    """Prueba crear usuario con datos inválidos"""
+    """Prueba crear usuario con rol inválido"""
     user_data = {
         "num_documento": test_persona.num_documento,
         "password": "abc123456",
-        "id_rol": 9999
+        "id_rol": 9999,
     }
     response = client.post("/api/users", json=user_data)
     assert response.status_code == 400
 
-def test_update_user_success(client,test_user, test_rol):
+
+def test_update_user_success(client, test_user, test_rol):
     """Prueba actualizar un usuario"""
     user_id = 1
     user_data = {
         "id_rol": 1,
         "nombres": "Laura Actualizada",
-        "apellidos": "Gomez"
+        "apellidos": "Gomez",
     }
     response = client.put(f"/api/users/{user_id}", json=user_data)
     assert response.status_code == 200
     assert response.json()["data"]["persona"]["nombres"] == user_data["nombres"]
 
+
 def test_update_user_not_found(client):
     """Prueba actualizar usuario inexistente"""
-    user_data = {
-        "id_rol": 1
-    }
+    user_data = {"id_rol": 1}
     response = client.put("/api/users/9999", json=user_data)
     assert response.status_code == 400
+
 
 def test_delete_user_success(client, test_user, test_rol):
     """Prueba soft delete de un usuario"""
@@ -66,10 +71,12 @@ def test_delete_user_success(client, test_user, test_rol):
     response = client.delete(f"/api/users/{user_id}")
     assert response.status_code == 204
 
+
 def test_delete_user_not_found(client):
     """Prueba eliminar usuario inexistente"""
     response = client.delete("/api/users/9999")
     assert response.status_code == 400
+
 
 def test_get_users_filter_by_documento(client, test_user):
     """Prueba filtrar usuarios por num_documento"""
@@ -91,12 +98,13 @@ def test_get_users_filter_by_apellido(client, test_user):
     assert response.status_code == 200
     assert isinstance(response.json()["data"]["data"], list)
 
+
 def test_create_user_persona_not_found(client):
     """Prueba crear usuario cuando la persona no existe"""
     user_data = {
-        "num_documento": 99999999,  # documento que no existe en Persona
+        "num_documento": 99999999,
         "password": "abc123456",
-        "id_rol": 1
+        "id_rol": 1,
     }
     response = client.post("/api/users", json=user_data)
     assert response.status_code == 404
