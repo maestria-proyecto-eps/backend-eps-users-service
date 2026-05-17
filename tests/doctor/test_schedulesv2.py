@@ -8,7 +8,7 @@ ID_ESPECIALIDAD_EXISTENTE = 1
 FECHA_TEST = "2026-05-20"
 
 
-def test_create_schedule():
+def test_create_schedule(test_doctor):
     payload = {
         "id_doctor": ID_DOCTOR_EXISTENTE,
         "id_especialidad": ID_ESPECIALIDAD_EXISTENTE,
@@ -36,7 +36,7 @@ def test_create_schedule_doctor_not_found():
     assert "no existe en la base de datos administrativa" in response.json()["detail"]
 
 
-def test_create_schedule_overlap():
+def test_create_schedule_overlap(test_doctor):
     payload_conflictivo = {
         "id_doctor": ID_DOCTOR_EXISTENTE,
         "id_especialidad": ID_ESPECIALIDAD_EXISTENTE,
@@ -50,7 +50,7 @@ def test_create_schedule_overlap():
     assert "Conflicto" in response.json()["detail"]
 
 
-def test_generate_slots():
+def test_generate_slots(test_doctor):
     response = client.get(
         f"/api/schedules/generate-slots/{ID_DOCTOR_EXISTENTE}"
         f"?fecha={FECHA_TEST}&duracion_minutos=20"
@@ -63,7 +63,7 @@ def test_generate_slots():
     assert data[0]["hora_fin"] == "08:20:00"
 
 
-def test_delete_schedule():
+def test_delete_schedule(test_doctor):
     get_response = client.get(f"/api/schedules/doctor/{ID_DOCTOR_EXISTENTE}")
     assert get_response.status_code == 200
     schedules = get_response.json()

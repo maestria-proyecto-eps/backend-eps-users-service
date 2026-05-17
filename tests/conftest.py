@@ -28,11 +28,11 @@ from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
 from main import app
-from db.session import Base, get_db, get_db_audit, get_db_operative_audit
+from db.session import Base, BaseOperative, get_db, get_db_audit, get_db_operative, get_db_operative_audit
 from core.dependencias import get_usuario_actual
 from core.auth_utils import get_current_user_id
 
-# ── Base de datos SQLite en memoria ──────────────────────────────────────────
+# ── Un solo engine SQLite en memoria para ambas bases ────────────────────────
 engine = create_engine(
     "sqlite://",
     connect_args={"check_same_thread": False},
@@ -76,17 +76,24 @@ def override_get_usuario_actual():
 # ── Setup global de la sesión de pruebas ─────────────────────────────────────
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_db():
+    # Crear tablas de AMBOS declarative_base en el mismo engine SQLite
     Base.metadata.create_all(bind=engine)
+    BaseOperative.metadata.create_all(bind=engine)
 
+    # Overrides de base de datos (admin y operativa apuntan al mismo SQLite)
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_db_audit] = override_get_db
+    app.dependency_overrides[get_db_operative] = override_get_db
     app.dependency_overrides[get_db_operative_audit] = override_get_db
+
+    # Overrides de autenticación
     app.dependency_overrides[get_current_user_id] = override_get_current_user_id
     app.dependency_overrides[get_usuario_actual] = override_get_usuario_actual
 
     yield
 
     Base.metadata.drop_all(bind=engine)
+    BaseOperative.metadata.drop_all(bind=engine)
     app.dependency_overrides.clear()
 
 
@@ -153,5 +160,41 @@ def test_user(test_persona, test_rol):
     db.refresh(usuario)
     yield usuario
     db.delete(usuario)
+    db.commit()
+    db.close()
+
+
+@pytest.fixture
+def test_doctor():
+    """Doctor de semilla necesario para los tests de schedules."""
+    from models.Persona import Persona
+    from models.doctor import Doctor
+    db = TestingSessionLocal()
+
+    # Doctor FK apunta a persona.num_documento, hay que crearla primero
+    persona = Persona(
+        num_documento=80112457,
+        nombres="Doctor",
+        apellidos="Semilla",
+    )
+    db.add(persona)
+    db.commit()
+
+    doctor = Doctor(
+        id_medico=80112457,
+        num_licencia=999999,
+        id_especialidad=1,
+    )
+    db.add(doctor)
+    db.commit()
+    db.refresh(doctor)
+    yield doctor
+
+    from models.schedule import Agenda
+    db.query(Agenda).filter(Agenda.id_doctor == 80112457).delete()
+    db.commit()
+    db.delete(doctor)
+    db.commit()
+    db.delete(persona)
     db.commit()
     db.close()
