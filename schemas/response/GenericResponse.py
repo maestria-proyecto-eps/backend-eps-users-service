@@ -1,5 +1,5 @@
 from typing import Generic, TypeVar, Optional
-
+from pydantic.generics import GenericModel
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi import Response as RS
@@ -7,21 +7,24 @@ from fastapi import status
 
 T = TypeVar("T")
 
-class Response(Generic[T]):
-    def __init__(self, hasError: bool, message: str, data: Optional[T] = None):
-        self.hasError = hasError
-        self.message = message
-        self.data = data
+class Response(GenericModel,Generic[T]):
+    hasError: bool
+    message: str
+    data: Optional[T] = None
+    statusCode: int = status.HTTP_200_OK
+
 
     @classmethod
     def ok(cls, data: T, message: str = "Operación exitosa") -> "Response[T]":
-        return cls(False, message, data)
+        return cls(hasError=False, message=message, data=data, statusCode=status.HTTP_200_OK)
 
     @classmethod
-    def error(cls, message: str) -> "Response[T]":
-        return cls(True, message, None)
+    def error(cls, message: str, status_code: int = status.HTTP_400_BAD_REQUEST) -> "Response[T]":
+        return cls(hasError=True, message=message, data=None, statusCode=status_code)
     
-    def toHttpResponse(self, statusCode=status.HTTP_200_OK):
+    def toHttpResponse(self, statusCode: int | None = None):
+        if statusCode is None:
+            statusCode = self.statusCode
         if statusCode == status.HTTP_204_NO_CONTENT:
             return RS(status_code=statusCode)
 

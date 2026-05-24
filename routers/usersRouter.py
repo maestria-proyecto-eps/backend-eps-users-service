@@ -7,35 +7,40 @@ from schemas.request.UserCreate import UserCreate
 from schemas.request.UserUpdateStatus import UserUpdateStatus
 from schemas.request.UserUpdate import UserUpdate
 from schemas.response.UserResponse import UserResponse
+from schemas.response.GenericResponse import Response
+from schemas.response.GenericPaginatedResponse import PaginatedResponse
 from services import UserService
-
+from core.dependencias import RequireRole, get_usuario_actual
 
 router = APIRouter(
     prefix="/users",
     tags=["Users"]
 )
 
-@router.post("/", response_model=UserResponse)
+@router.post("/", response_model=Response[UserResponse], dependencies=[Depends(RequireRole(["Talento Humano"]))])
 def createUser(
     user: UserCreate,
     service: UserService = Depends(getUserService)
 ):
     model = service.AddUser(user)
     if(model.hasError):
-        return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
+        status_code = model.statusCode if model.statusCode != status.HTTP_200_OK else status.HTTP_400_BAD_REQUEST
+        return model.toHttpResponse(status_code)
     return model.toHttpResponse(status.HTTP_201_CREATED)
 
-@router.get("/", response_model=UserResponse)
+@router.get("/", response_model=Response[PaginatedResponse[UserResponse]], dependencies=[Depends(get_usuario_actual)])
 def GetUsers(
-    rol:int=None,estado:int=None,pag:int=1,cantidad:int=30,
+    rol:int=None,estado:bool=None,num_document:int=None,
+    nombres:str=None,apellidos:str=None,
+    pag:int=1,cantidad:int=30,
     service: UserService = Depends(getUserService)
 ):
-    model = service.GetUsers(rol,estado,pag,cantidad)
+    model = service.GetUsers(rol,estado,num_document,nombres,apellidos,pag,cantidad)
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse()
 
-@router.get("/{id}", response_model=UserResponse)
+@router.get("/{id}", response_model=Response[UserResponse], dependencies=[Depends(RequireRole(["Talento Humano"]))])
 def getUser(
     id: int,
     service: UserService = Depends(getUserService)
@@ -45,7 +50,7 @@ def getUser(
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse(status.HTTP_200_OK)
 
-@router.put("/{id}", response_model=UserResponse)
+@router.put("/{id}", response_model=Response[UserResponse], dependencies=[Depends(RequireRole(["Talento Humano"]))])
 def UpdateUser(
     id: int,
     user: UserUpdate,
@@ -56,7 +61,7 @@ def UpdateUser(
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse()
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(RequireRole(["Talento Humano"]))])
 def deleteUser(
     id: int,
     service: UserService = Depends(getUserService)
@@ -66,7 +71,7 @@ def deleteUser(
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse(status.HTTP_204_NO_CONTENT)
 
-@router.put("/{id}/change-role", response_model=UserResponse)
+@router.put("/{id}/change-role", response_model=Response[UserResponse], dependencies=[Depends(RequireRole(["Talento Humano"]))])
 def UpdateRoleUser(
     id: int,
     user: UserUpdateRole,
@@ -76,7 +81,7 @@ def UpdateRoleUser(
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse()
-@router.put("/{id}/change-status", response_model=UserResponse)
+@router.put("/{id}/change-status", response_model=Response[UserResponse], dependencies=[Depends(RequireRole(["Talento Humano"]))])
 def UpdateStatusUser(
     id: int,
     user: UserUpdateStatus,
@@ -86,7 +91,7 @@ def UpdateStatusUser(
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse()
-@router.post("/{id}/reset-password", response_model=UserResponse)
+@router.post("/{id}/reset-password", response_model=Response[UserResponse], dependencies=[Depends(RequireRole(["Talento Humano"]))])
 def UpdatePasswordUser(
     id: int,
     user: UserChangePassword,
@@ -96,4 +101,3 @@ def UpdatePasswordUser(
     if(model.hasError):
         return model.toHttpResponse(status.HTTP_400_BAD_REQUEST)
     return model.toHttpResponse()
-
